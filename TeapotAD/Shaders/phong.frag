@@ -32,8 +32,16 @@ void main() {
    //calculate Diffuse Light Intensity making sure it is not negative and is clamped 0 to 1  
    vec3 D = Kd*Ld* max(dot(N,L), 0.0); // For transformations
    D = clamp(D, 0.0, 1.0);
-   //Multiply the Reflectivity by the Diffuse intensity
-   FragColour = vec4(ambient+D, 1.0);
+
+   //---Specular lighting----//
+   vec3 lookVec = normalize(CPos - vertPos);
+   vec3 lightReflectVec = reflect(-L, N);
+   float viewAngle = dot(lookVec, lightReflectVec);
+   vec3 specular = clamp(Ks * Ls * pow(viewAngle,2),0.0,1.0);
+
+
+
+   FragColour = vec4(ambient + D + specular, 1.0);
 
 }
 
