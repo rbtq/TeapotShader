@@ -71,7 +71,8 @@ void SceneDiffuse::setLightParams(QuatCamera camera)
 	vec3 worldLight = vec3(10.0f,10.0f,10.0f);
    
 	
-	prog.setUniform("Ld", 0.9f, 0.9f, 0.9f);//set defuse intensity
+	prog.setUniform("Ls", 0.3f, 0.3f, 0.3f); //set specular intensity
+	prog.setUniform("Ld", 0.9f, 0.9f, 0.9f); //set defuse intensity
 	prog.setUniform("La", 0.3f, 0.3f, 0.3f); //set ambient intensity
 	
 	prog.setUniform("LightPosition", worldLight );
@@ -91,6 +92,7 @@ void SceneDiffuse::render(QuatCamera camera)
 	//Set the matrices for the plane although it is only the model matrix that changes so could be made more efficient
     setMatrices(camera);
 	//Set the plane's material properties in the shader and render
+	prog.setUniform("Ks", 0.10f, 0.1f, 0.10f); // What elements does Kd have?
 	prog.setUniform("Kd", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
 	prog.setUniform("Ka", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
 	plane->render();// what does it do?
@@ -101,8 +103,9 @@ void SceneDiffuse::render(QuatCamera camera)
 	 model = mat4(1.0f);
 	 setMatrices(camera);
 	 //Set the Teapot material properties in the shader and render
-	 prog.setUniform("Kd", 0.46f, 0.29f, 0.0f); // What elements does Kd have?
-	 prog.setUniform("Ka", 0.46f, 0.29f, 0.0f); // What elements does Kd have?
+	 prog.setUniform("Ks", 0.29f, 0.29f, 0.29f); // What elements does Kd have?
+	 prog.setUniform("Kd", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
+	 prog.setUniform("Ka", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
 	 teapot->render(); // what does it do?
 	
 }
@@ -122,6 +125,7 @@ void SceneDiffuse::setMatrices(QuatCamera camera)
 	prog.setUniform("M", model);
 	prog.setUniform("V", camera.view() );
 	prog.setUniform("P", camera.projection() );
+	prog.setUniform("CPos", camera.position());
 
 	
 }
