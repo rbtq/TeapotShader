@@ -31,10 +31,12 @@ using namespace imat2908;
 GLFWwindow *window;
 
 //The Scene
-Scene *scene;
+SceneDiffuse *scene;
 
 //The camera
 QuatCamera camera;
+
+ThingToChange thingToChange = ThingToChange::AMBIENT_INTENSITY;
 
 //To keep track of cursor location
 double lastCursorPositionX, lastCursorPositionY, cursorPositionX, cursorPositionY;
@@ -45,11 +47,50 @@ double lastCursorPositionX, lastCursorPositionY, cursorPositionX, cursorPosition
 /////////////////////////////////////////////////////////////////////////////////////////////
 static void key_callback(GLFWwindow* window, int key, int cancode, int action, int mods)
 {
+	//std::cout << "a" << std::endl;
 	if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
 		if (scene)
 			scene->animate(!(scene->animating()));
 	if (key == 'R' && action == GLFW_RELEASE)
 			camera.reset();
+	//change intensity
+	if (key == GLFW_KEY_KP_ADD) {
+		//debug
+		std::cout << "Increasing ";
+		switch (thingToChange) {
+			case ThingToChange::AMBIENT_INTENSITY: std::cout << "ambient "; break;
+			case ThingToChange::SPECULAR_INTENSITY: std::cout << "specular "; break;
+			case ThingToChange::DIFFUSE_INTENSITY: std::cout << "diffuse "; break;
+		}
+		scene->changeLightIntensity(thingToChange, 0.01f);
+		std::cout << "light intensity by 0.01 to " << scene->getLightIntensity(thingToChange) << std::endl;
+	}
+	//change intensity as long as it isnt -
+	if (key == GLFW_KEY_KP_SUBTRACT && scene->getLightIntensity(thingToChange) >= 0.0f) {
+		//debug
+		std::cout << "Decreasing ";
+		switch (thingToChange) {
+		case ThingToChange::AMBIENT_INTENSITY: std::cout << "ambient "; break;
+		case ThingToChange::SPECULAR_INTENSITY: std::cout << "specular "; break;
+		case ThingToChange::DIFFUSE_INTENSITY: std::cout << "diffuse "; break;
+		}
+		scene->changeLightIntensity(thingToChange, -0.01f);
+		std::cout << "light intensity by 0.01 to " << scene->getLightIntensity(thingToChange) << std::endl;
+	}
+	//change the type of light to be changed
+	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
+		switch (thingToChange) {
+			case ThingToChange::AMBIENT_INTENSITY: thingToChange = ThingToChange::DIFFUSE_INTENSITY; break;
+			case ThingToChange::DIFFUSE_INTENSITY: thingToChange = ThingToChange::SPECULAR_INTENSITY; break;
+		}
+	}
+	//change the type of light to be changed
+	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
+		switch (thingToChange) {
+		case ThingToChange::DIFFUSE_INTENSITY: thingToChange = ThingToChange::AMBIENT_INTENSITY; break;
+		case ThingToChange::SPECULAR_INTENSITY: thingToChange = ThingToChange::DIFFUSE_INTENSITY; break;
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,6 +118,7 @@ void initializeGL() {
 	// Create the scene class and initialise it for the camera
 	scene = new SceneDiffuse();
     scene->initScene(camera);
+	glfwSetKeyCallback(window, key_callback);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +242,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	initializeGL();
 
 	resizeGL(camera,WIN_WIDTH,WIN_HEIGHT);
-
 
 	// Enter the main loop
 	mainLoop();

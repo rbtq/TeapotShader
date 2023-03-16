@@ -13,10 +13,30 @@
 #include <glm.hpp>
 
 using glm::mat4;
+//The value to increase with the +- keys
+enum ThingToChange { AMBIENT_INTENSITY, DIFFUSE_INTENSITY, SPECULAR_INTENSITY };
 
 
 namespace imat2908
 {
+
+//structure for light parameters
+struct LightParams {
+public:
+    float Ls = 0.3f;
+    float Ld = 0.9f;
+    float La = 0.3f;
+
+};
+
+//structure for material parameters
+struct MaterialParams {
+public:
+    vec3 Ks = vec3(0);
+    vec3 Kd = vec3(0);
+    vec3 Ka = vec3(0);
+};
+
 
 class SceneDiffuse : public Scene
 {
@@ -27,8 +47,13 @@ private:
  
 	VBOTeapot *teapot;  //Teapot VBO
 	VBOPlane *plane;  //Plane VBO
+    LightParams lightParameters; //!<stores the parameters for the light
+    MaterialParams planeMaterial; //!<stores parameters for the plane
+    MaterialParams teapotMaterial; //!<stores parameters for the teapot
 
     mat4 model; //Model matrix
+
+    //light intensity
 
 
     void setMatrices(QuatCamera camera); //Set the camera matrices
@@ -47,6 +72,11 @@ public:
     void render(QuatCamera camera);	//Render the scene
 
     void resize(QuatCamera camera, int, int); //Resize
+
+    void changeLightIntensity(ThingToChange type, float value); //!<change the light intensity of a type of light
+    float getLightIntensity(ThingToChange type); //!<get the current light intensity for a type of light
+
+    
 };
 
 }

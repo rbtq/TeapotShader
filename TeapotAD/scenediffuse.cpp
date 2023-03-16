@@ -23,6 +23,25 @@ namespace imat2908
 /////////////////////////////////////////////////////////////////////////////////////////////
 SceneDiffuse::SceneDiffuse()
 {
+	/*
+	//Set the plane's material properties in the shader and render
+	prog.setUniform("lightDef.Ks", 0.10f, 0.1f, 0.10f); // What elements does Kd have?
+	prog.setUniform("lightDef.Kd", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
+	prog.setUniform("lightDef.Ka", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
+	//Set the Teapot material properties in the shader and render
+	prog.setUniform("lightDef.Ks", 0.29f, 0.29f, 0.29f); // What elements does Kd have?
+	prog.setUniform("lightDef.Kd", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
+	prog.setUniform("lightDef.Ka", 0.46f, 0.29f, 0.00f); // What elements does Kd have?*/
+
+	//setup structures
+	planeMaterial.Ks = vec3(0.10f, 0.1f, 0.10f);
+	planeMaterial.Kd = vec3(0.51f, 1.0f, 0.49f);
+	planeMaterial.Ka = vec3(0.51f, 1.0f, 0.49f);
+
+	teapotMaterial.Ks = vec3(0.29f, 0.29f, 0.29f);
+	teapotMaterial.Kd = vec3(0.46f, 0.29f, 0.00f);
+	teapotMaterial.Ka = vec3(0.46f, 0.29f, 0.00f);
+	
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,9 +90,9 @@ void SceneDiffuse::setLightParams(QuatCamera camera)
 	vec3 worldLight = vec3(10.0f,10.0f,10.0f);
    
 	
-	prog.setUniform("Ls", 0.3f, 0.3f, 0.3f); //set specular intensity
-	prog.setUniform("Ld", 0.9f, 0.9f, 0.9f); //set defuse intensity
-	prog.setUniform("La", 0.3f, 0.3f, 0.3f); //set ambient intensity
+	prog.setUniform("lightDef.Ls", lightParameters.Ls, lightParameters.Ls, lightParameters.Ls); //set specular intensity
+	prog.setUniform("lightDef.Ld", lightParameters.Ld, lightParameters.Ld, lightParameters.Ld); //set defuse intensity
+	prog.setUniform("lightDef.La", lightParameters.La, lightParameters.La, lightParameters.La); //set ambient intensity
 	
 	prog.setUniform("LightPosition", worldLight );
 }
@@ -85,6 +104,8 @@ void SceneDiffuse::render(QuatCamera camera)
 {
     gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
+	setLightParams(camera); //update the light parameters
+
 	//First deal with the plane to represent the ground
 
 	//Initialise the model matrix for the plane
@@ -92,9 +113,9 @@ void SceneDiffuse::render(QuatCamera camera)
 	//Set the matrices for the plane although it is only the model matrix that changes so could be made more efficient
     setMatrices(camera);
 	//Set the plane's material properties in the shader and render
-	prog.setUniform("Ks", 0.10f, 0.1f, 0.10f); // What elements does Kd have?
-	prog.setUniform("Kd", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
-	prog.setUniform("Ka", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
+	prog.setUniform("lightDef.Ks", planeMaterial.Ks); // What elements does Kd have?
+	prog.setUniform("lightDef.Kd", planeMaterial.Kd); // What elements does Kd have?
+	prog.setUniform("lightDef.Ka", planeMaterial.Ka); // What elements does Kd have?
 	plane->render();// what does it do?
 
 
@@ -103,9 +124,9 @@ void SceneDiffuse::render(QuatCamera camera)
 	 model = mat4(1.0f);
 	 setMatrices(camera);
 	 //Set the Teapot material properties in the shader and render
-	 prog.setUniform("Ks", 0.29f, 0.29f, 0.29f); // What elements does Kd have?
-	 prog.setUniform("Kd", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
-	 prog.setUniform("Ka", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
+	 prog.setUniform("lightDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
+	 prog.setUniform("lightDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
+	 prog.setUniform("lightDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
 	 teapot->render(); // what does it do?
 	
 }
@@ -158,6 +179,39 @@ void SceneDiffuse::compileAndLinkShader()
  		cerr << e.what() << endl;
  		exit( EXIT_FAILURE );
     }
+}
+
+//changing the intensity of light
+void SceneDiffuse::changeLightIntensity(ThingToChange type, float value) {
+	switch (type) {
+		case ThingToChange::AMBIENT_INTENSITY: { //ambient
+			lightParameters.La += value;
+			prog.setUniform("lightDef.La", lightParameters.La);
+			break;
+		}
+		case ThingToChange::DIFFUSE_INTENSITY: { //diffuse
+			lightParameters.Ld += value;
+			prog.setUniform("lightDef.Ld", lightParameters.Ld);
+			break;
+		}
+		case ThingToChange::SPECULAR_INTENSITY: { //specular
+			lightParameters.Ls += value;
+			prog.setUniform("lightDef.Ls", lightParameters.Ls);
+			break;
+		}
+	}
+}
+//get the light intensity for a type of light
+float SceneDiffuse::getLightIntensity(ThingToChange type) {
+	switch(type) {
+		case ThingToChange::AMBIENT_INTENSITY: return lightParameters.La;
+		case ThingToChange::DIFFUSE_INTENSITY: return lightParameters.Ld;
+		case ThingToChange::SPECULAR_INTENSITY: return lightParameters.Ls;
+		default: {
+			std::cout << "[Error] Invalid light type specified: " << type << std::endl;
+			return 0.0f;
+		}
+	}
 }
 
 }
