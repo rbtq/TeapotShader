@@ -37,7 +37,7 @@ void main() {
    vec3 lookVec = normalize(CPos - vertPos);
    vec3 lightReflectVec = reflect(-L, N);
    float viewAngle = dot(lookVec, lightReflectVec);
-   vec3 specular = clamp(Ks * Ls * pow(viewAngle,2),0.0,1.0);
+   vec3 specular = clamp(Ks * Ls * pow(viewAngle,20),0.0,1.0);
 
 
 
