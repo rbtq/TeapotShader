@@ -158,6 +158,11 @@ static void key_callback(GLFWwindow* window, int key, int cancode, int action, i
 		thingToChange--;
 		printWhatCouldBeChanged(thingToChange.getWhatToChange());
 	}
+	//print the data
+	else if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) {
+		system("CLS");
+		scene->printSceneValues();
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

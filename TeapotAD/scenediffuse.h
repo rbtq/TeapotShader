@@ -108,6 +108,7 @@ public:
 
     void changeLightIntensity(WhatToChange type, float value); //!<change the light intensity of a type of light
     float getValue(WhatToChange type); //!<get the current light intensity for a type of light
+    void printSceneValues(); //!<print all scene values
 
     
 };

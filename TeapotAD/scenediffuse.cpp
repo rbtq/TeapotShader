@@ -307,4 +307,19 @@ float SceneDiffuse::getValue(WhatToChange type) {
 	}
 }
 
+//function that prints all the values
+void SceneDiffuse::printSceneValues() {
+	std::cout << "--------------- Scene Values ----------------" << std::endl;
+	std::cout << "Current Ambient light intensity: " << lightParameters.La << std::endl;
+	std::cout << "Current Diffuse light intensity: " << lightParameters.Ld << std::endl;
+	std::cout << "Current Specular light intensity: " << lightParameters.Ls << std::endl;
+	std::cout << "Current Specular light power: " << lightParameters.Lsp << std::endl;
+	std::cout << "Current Teapot Material ambient: " << teapotMaterial.Ka.x << " " << teapotMaterial.Ka.y << " " << teapotMaterial.Ka.z << std::endl;
+	std::cout << "Current Teapot Material diffuse: " << teapotMaterial.Kd.x << " " << teapotMaterial.Kd.y << " " << teapotMaterial.Kd.z << std::endl;
+	std::cout << "Current Teapot Material specular: " << teapotMaterial.Ks.x << " " << teapotMaterial.Ks.y << " " << teapotMaterial.Ks.z << std::endl;
+	std::cout << "Current Plane Material ambient: " << planeMaterial.Ka.x << " " << planeMaterial.Ka.y << " " << planeMaterial.Ka.z << std::endl;
+	std::cout << "Current Plane Material diffuse: " << planeMaterial.Kd.x << " " << planeMaterial.Kd.y << " " << planeMaterial.Kd.z << std::endl;
+	std::cout << "Current Plane Material specular: " << planeMaterial.Ks.x << " " << planeMaterial.Ks.y << " " << planeMaterial.Ks.z << std::endl;
+}
+
 }
