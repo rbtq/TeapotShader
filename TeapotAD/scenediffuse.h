@@ -13,19 +13,52 @@
 #include <glm.hpp>
 
 using glm::mat4;
-//The value to increase with the +- keys
-enum ThingToChange { AMBIENT_INTENSITY, DIFFUSE_INTENSITY, SPECULAR_INTENSITY };
 
 
 namespace imat2908
 {
+enum WhatToChange { AMBIENT_INTENSITY, DIFFUSE_INTENSITY, SPECULAR_INTENSITY, 
+    TEAPOT_KA_R, TEAPOT_KA_G, TEAPOT_KA_B,
+    TEAPOT_KD_R, TEAPOT_KD_G, TEAPOT_KD_B,
+    TEAPOT_KS_R, TEAPOT_KS_G, TEAPOT_KS_B,
+    BACKGROUND_KA_R, BACKGROUND_KA_G, BACKGROUND_KA_B,
+    BACKGROUND_KD_R, BACKGROUND_KD_G, BACKGROUND_KD_B,
+    BACKGROUND_KS_R, BACKGROUND_KS_G, BACKGROUND_KS_B,
+    POWER_KS
+};
+class ThingToChange {
+private:
+    //The value to increase with the +- keys
+    unsigned int toChangeInt = 0U;
+    WhatToChange toChange = WhatToChange::AMBIENT_INTENSITY;
+
+public:
+    //operator functions to change what to change
+    void operator++(int) {
+        if (toChange != WhatToChange::POWER_KS) {
+            toChangeInt++;
+            toChange = (WhatToChange)toChangeInt;
+        }
+    }
+    void operator--(int) {
+        //can only decrease to zero at lowest
+        if (toChangeInt > 0) {
+            toChangeInt--;
+            toChange = (WhatToChange)toChangeInt;
+        }
+    }
+    //getter function
+    WhatToChange getWhatToChange() { return toChange; };
+
+};
 
 //structure for light parameters
 struct LightParams {
 public:
-    float Ls = 0.3f;
+    float Ls = 0.9f;
     float Ld = 0.9f;
     float La = 0.3f;
+    float Lsp = 2.0f;
 
 };
 
@@ -73,8 +106,8 @@ public:
 
     void resize(QuatCamera camera, int, int); //Resize
 
-    void changeLightIntensity(ThingToChange type, float value); //!<change the light intensity of a type of light
-    float getLightIntensity(ThingToChange type); //!<get the current light intensity for a type of light
+    void changeLightIntensity(WhatToChange type, float value); //!<change the light intensity of a type of light
+    float getValue(WhatToChange type); //!<get the current light intensity for a type of light
 
     
 };

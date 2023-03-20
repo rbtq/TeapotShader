@@ -36,10 +36,86 @@ SceneDiffuse *scene;
 //The camera
 QuatCamera camera;
 
-ThingToChange thingToChange = ThingToChange::AMBIENT_INTENSITY;
+ThingToChange thingToChange;
 
 //To keep track of cursor location
 double lastCursorPositionX, lastCursorPositionY, cursorPositionX, cursorPositionY;
+
+//printing the result of a change
+void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAmount, float newValue) {
+	//is it increasing?
+	if (isIncreasing) {
+		std::cout << "Increasing ";
+	}
+	else {
+		std::cout << "Decreasing ";
+	}
+
+	//what is the change?
+	switch (changed)
+	{
+		case WhatToChange::AMBIENT_INTENSITY: std::cout << "ambient light intensity "; break;
+		case WhatToChange::DIFFUSE_INTENSITY: std::cout << "diffuse light intensity "; break;
+		case WhatToChange::SPECULAR_INTENSITY: std::cout << "specular light intensity "; break;
+		case WhatToChange::POWER_KS: std::cout << "specular light power "; break;
+		case WhatToChange::BACKGROUND_KA_R: std::cout << "background ambient red value "; break;
+		case WhatToChange::BACKGROUND_KA_G: std::cout << "background ambient green value "; break;
+		case WhatToChange::BACKGROUND_KA_B: std::cout << "background ambient blue value "; break;
+		case WhatToChange::BACKGROUND_KD_R: std::cout << "background diffuse red value "; break;
+		case WhatToChange::BACKGROUND_KD_G: std::cout << "background diffuse green value "; break;
+		case WhatToChange::BACKGROUND_KD_B: std::cout << "background diffuse blue value "; break;
+		case WhatToChange::BACKGROUND_KS_R: std::cout << "background specular red value "; break;
+		case WhatToChange::BACKGROUND_KS_G: std::cout << "background specular green value "; break;
+		case WhatToChange::BACKGROUND_KS_B: std::cout << "background specular blue value "; break;
+		case WhatToChange::TEAPOT_KA_R: std::cout << "teapot ambient red value "; break;
+		case WhatToChange::TEAPOT_KA_G: std::cout << "teapot ambient green value "; break;
+		case WhatToChange::TEAPOT_KA_B: std::cout << "teapot ambient blue value "; break;
+		case WhatToChange::TEAPOT_KD_R: std::cout << "teapot diffuse red value "; break;
+		case WhatToChange::TEAPOT_KD_G: std::cout << "teapot diffuse green value "; break;
+		case WhatToChange::TEAPOT_KD_B: std::cout << "teapot diffuse blue value "; break;
+		case WhatToChange::TEAPOT_KS_R: std::cout << "teapot specular red value "; break;
+		case WhatToChange::TEAPOT_KS_G: std::cout << "teapot specular green value "; break;
+		case WhatToChange::TEAPOT_KS_B: std::cout << "teapot specular blue value "; break;
+		default: std::cout << "null "; break;
+	}
+
+	//what is the amount and new value
+	std::cout << "by " << changeAmount << " to " << newValue << std::endl;
+
+}
+
+//printing what is currently selected to be changed
+void printWhatCouldBeChanged(WhatToChange change) {
+	std::cout << "Current value selected: ";
+	//what is selected
+	switch (change)
+	{
+		case WhatToChange::AMBIENT_INTENSITY: std::cout << "ambient light intensity "; break;
+		case WhatToChange::DIFFUSE_INTENSITY: std::cout << "diffuse light intensity "; break;
+		case WhatToChange::SPECULAR_INTENSITY: std::cout << "specular light intensity "; break;
+		case WhatToChange::POWER_KS: std::cout << "specular light power "; break;
+		case WhatToChange::BACKGROUND_KA_R: std::cout << "background ambient red value "; break;
+		case WhatToChange::BACKGROUND_KA_G: std::cout << "background ambient green value "; break;
+		case WhatToChange::BACKGROUND_KA_B: std::cout << "background ambient blue value "; break;
+		case WhatToChange::BACKGROUND_KD_R: std::cout << "background diffuse red value "; break;
+		case WhatToChange::BACKGROUND_KD_G: std::cout << "background diffuse green value "; break;
+		case WhatToChange::BACKGROUND_KD_B: std::cout << "background diffuse blue value "; break;
+		case WhatToChange::BACKGROUND_KS_R: std::cout << "background specular red value "; break;
+		case WhatToChange::BACKGROUND_KS_G: std::cout << "background specular green value "; break;
+		case WhatToChange::BACKGROUND_KS_B: std::cout << "background specular blue value "; break;
+		case WhatToChange::TEAPOT_KA_R: std::cout << "teapot ambient red value "; break;
+		case WhatToChange::TEAPOT_KA_G: std::cout << "teapot ambient green value "; break;
+		case WhatToChange::TEAPOT_KA_B: std::cout << "teapot ambient blue value "; break;
+		case WhatToChange::TEAPOT_KD_R: std::cout << "teapot diffuse red value "; break;
+		case WhatToChange::TEAPOT_KD_G: std::cout << "teapot diffuse green value "; break;
+		case WhatToChange::TEAPOT_KD_B: std::cout << "teapot diffuse blue value "; break;
+		case WhatToChange::TEAPOT_KS_R: std::cout << "teapot specular red value "; break;
+		case WhatToChange::TEAPOT_KS_G: std::cout << "teapot specular green value "; break;
+		case WhatToChange::TEAPOT_KS_B: std::cout << "teapot specular blue value "; break;
+		default: std::cout << "null "; break;
+	}
+	std::cout << std::endl;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //Callback function for keypress use to toggle animate (not used at the moment)
@@ -47,6 +123,7 @@ double lastCursorPositionX, lastCursorPositionY, cursorPositionX, cursorPosition
 /////////////////////////////////////////////////////////////////////////////////////////////
 static void key_callback(GLFWwindow* window, int key, int cancode, int action, int mods)
 {
+	float initialValue = scene->getValue(thingToChange.getWhatToChange());
 	//std::cout << "a" << std::endl;
 	if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
 		if (scene)
@@ -55,41 +132,31 @@ static void key_callback(GLFWwindow* window, int key, int cancode, int action, i
 			camera.reset();
 	//change intensity
 	if (key == GLFW_KEY_KP_ADD) {
-		//debug
-		std::cout << "Increasing ";
-		switch (thingToChange) {
-			case ThingToChange::AMBIENT_INTENSITY: std::cout << "ambient "; break;
-			case ThingToChange::SPECULAR_INTENSITY: std::cout << "specular "; break;
-			case ThingToChange::DIFFUSE_INTENSITY: std::cout << "diffuse "; break;
-		}
-		scene->changeLightIntensity(thingToChange, 0.01f);
-		std::cout << "light intensity by 0.01 to " << scene->getLightIntensity(thingToChange) << std::endl;
+		scene->changeLightIntensity(thingToChange.getWhatToChange(), 0.01f);
+		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//change intensity as long as it isnt -
-	if (key == GLFW_KEY_KP_SUBTRACT && scene->getLightIntensity(thingToChange) >= 0.0f) {
-		//debug
-		std::cout << "Decreasing ";
-		switch (thingToChange) {
-		case ThingToChange::AMBIENT_INTENSITY: std::cout << "ambient "; break;
-		case ThingToChange::SPECULAR_INTENSITY: std::cout << "specular "; break;
-		case ThingToChange::DIFFUSE_INTENSITY: std::cout << "diffuse "; break;
-		}
-		scene->changeLightIntensity(thingToChange, -0.01f);
-		std::cout << "light intensity by 0.01 to " << scene->getLightIntensity(thingToChange) << std::endl;
+	else if (key == GLFW_KEY_KP_SUBTRACT && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
+		scene->changeLightIntensity(thingToChange.getWhatToChange(), -0.01f);
+		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
+	}
+	else if (key == GLFW_KEY_KP_MULTIPLY && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
+		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * 0.1f);
+		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
+	}
+	else if (key == GLFW_KEY_KP_DIVIDE && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
+		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * -0.1f);
+		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//change the type of light to be changed
-	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
-		switch (thingToChange) {
-			case ThingToChange::AMBIENT_INTENSITY: thingToChange = ThingToChange::DIFFUSE_INTENSITY; break;
-			case ThingToChange::DIFFUSE_INTENSITY: thingToChange = ThingToChange::SPECULAR_INTENSITY; break;
-		}
+	else if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
+		thingToChange++;
+		printWhatCouldBeChanged(thingToChange.getWhatToChange());
 	}
 	//change the type of light to be changed
-	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
-		switch (thingToChange) {
-		case ThingToChange::DIFFUSE_INTENSITY: thingToChange = ThingToChange::AMBIENT_INTENSITY; break;
-		case ThingToChange::SPECULAR_INTENSITY: thingToChange = ThingToChange::DIFFUSE_INTENSITY; break;
-		}
+	else if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
+		thingToChange--;
+		printWhatCouldBeChanged(thingToChange.getWhatToChange());
 	}
 }
 
@@ -235,8 +302,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-
-
 
 	// Initialization
 	initializeGL();

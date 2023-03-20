@@ -93,6 +93,7 @@ void SceneDiffuse::setLightParams(QuatCamera camera)
 	prog.setUniform("lightDef.Ls", lightParameters.Ls, lightParameters.Ls, lightParameters.Ls); //set specular intensity
 	prog.setUniform("lightDef.Ld", lightParameters.Ld, lightParameters.Ld, lightParameters.Ld); //set defuse intensity
 	prog.setUniform("lightDef.La", lightParameters.La, lightParameters.La, lightParameters.La); //set ambient intensity
+	prog.setUniform("lightDef.Lsp", lightParameters.Lsp); //set specular power
 	
 	prog.setUniform("LightPosition", worldLight );
 }
@@ -113,9 +114,9 @@ void SceneDiffuse::render(QuatCamera camera)
 	//Set the matrices for the plane although it is only the model matrix that changes so could be made more efficient
     setMatrices(camera);
 	//Set the plane's material properties in the shader and render
-	prog.setUniform("lightDef.Ks", planeMaterial.Ks); // What elements does Kd have?
-	prog.setUniform("lightDef.Kd", planeMaterial.Kd); // What elements does Kd have?
-	prog.setUniform("lightDef.Ka", planeMaterial.Ka); // What elements does Kd have?
+	prog.setUniform("materialDef.Ks", planeMaterial.Ks); // What elements does Kd have?
+	prog.setUniform("materialDef.Kd", planeMaterial.Kd); // What elements does Kd have?
+	prog.setUniform("materialDef.Ka", planeMaterial.Ka); // What elements does Kd have?
 	plane->render();// what does it do?
 
 
@@ -124,9 +125,9 @@ void SceneDiffuse::render(QuatCamera camera)
 	 model = mat4(1.0f);
 	 setMatrices(camera);
 	 //Set the Teapot material properties in the shader and render
-	 prog.setUniform("lightDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
-	 prog.setUniform("lightDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
-	 prog.setUniform("lightDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
+	 prog.setUniform("materialDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
+	 prog.setUniform("materialDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
+	 prog.setUniform("materialDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
 	 teapot->render(); // what does it do?
 	
 }
@@ -182,31 +183,123 @@ void SceneDiffuse::compileAndLinkShader()
 }
 
 //changing the intensity of light
-void SceneDiffuse::changeLightIntensity(ThingToChange type, float value) {
+void SceneDiffuse::changeLightIntensity(WhatToChange type, float value) {
 	switch (type) {
-		case ThingToChange::AMBIENT_INTENSITY: { //ambient
+		case WhatToChange::AMBIENT_INTENSITY: { //ambient
 			lightParameters.La += value;
-			prog.setUniform("lightDef.La", lightParameters.La);
 			break;
 		}
-		case ThingToChange::DIFFUSE_INTENSITY: { //diffuse
+		case WhatToChange::DIFFUSE_INTENSITY: { //diffuse
 			lightParameters.Ld += value;
-			prog.setUniform("lightDef.Ld", lightParameters.Ld);
 			break;
 		}
-		case ThingToChange::SPECULAR_INTENSITY: { //specular
+		case WhatToChange::SPECULAR_INTENSITY: { //specular
 			lightParameters.Ls += value;
-			prog.setUniform("lightDef.Ls", lightParameters.Ls);
+			break;
+		}
+		case WhatToChange::BACKGROUND_KA_R: { //background color red ambient
+			planeMaterial.Ka.x += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KA_G: { //background color green ambient
+			planeMaterial.Ka.y += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KA_B: { //background color blue ambient
+			planeMaterial.Ka.z += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KD_R: { //background color red diffuse
+			planeMaterial.Kd.x += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KD_G: { //background color green diffuse
+			planeMaterial.Kd.y += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KD_B: { //background color blue diffuse
+			planeMaterial.Kd.z += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KS_R: { //background color red specular
+			planeMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KS_G: { //background color green specular
+			planeMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::BACKGROUND_KS_B: { //background color blue specular
+			planeMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KA_R: { //teapot color red ambient
+			teapotMaterial.Ka.x += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KA_G: { //teapot color green ambient
+			teapotMaterial.Ka.y += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KA_B: { //teapot color blue ambient
+			teapotMaterial.Ka.z += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KD_R: { //teapot color red diffuse
+			teapotMaterial.Kd.x += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KD_G: { //teapot color green diffuse
+			teapotMaterial.Kd.y += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KD_B: { //teapot color blue diffuse
+			teapotMaterial.Kd.z += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KS_R: { //teapot color red specular
+			teapotMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KS_G: { //teapot color green specular
+			teapotMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::TEAPOT_KS_B: { //teapot color blue specular
+			teapotMaterial.Ks.z += value;
+			break;
+		}
+		case WhatToChange::POWER_KS: { //power for specular
+			lightParameters.Lsp += value;
 			break;
 		}
 	}
 }
 //get the light intensity for a type of light
-float SceneDiffuse::getLightIntensity(ThingToChange type) {
+float SceneDiffuse::getValue(WhatToChange type) {
 	switch(type) {
-		case ThingToChange::AMBIENT_INTENSITY: return lightParameters.La;
-		case ThingToChange::DIFFUSE_INTENSITY: return lightParameters.Ld;
-		case ThingToChange::SPECULAR_INTENSITY: return lightParameters.Ls;
+		case WhatToChange::AMBIENT_INTENSITY: return lightParameters.La;
+		case WhatToChange::DIFFUSE_INTENSITY: return lightParameters.Ld;
+		case WhatToChange::SPECULAR_INTENSITY: return lightParameters.Ls;
+		case WhatToChange::BACKGROUND_KA_R: return planeMaterial.Ka.x;
+		case WhatToChange::BACKGROUND_KA_G: return planeMaterial.Ka.y;
+		case WhatToChange::BACKGROUND_KA_B: return planeMaterial.Ka.z;
+		case WhatToChange::BACKGROUND_KD_R: return planeMaterial.Kd.x;
+		case WhatToChange::BACKGROUND_KD_G: return planeMaterial.Kd.y;
+		case WhatToChange::BACKGROUND_KD_B: return planeMaterial.Kd.z;
+		case WhatToChange::BACKGROUND_KS_R: return planeMaterial.Ks.x;
+		case WhatToChange::BACKGROUND_KS_G: return planeMaterial.Ks.y;
+		case WhatToChange::BACKGROUND_KS_B: return planeMaterial.Ks.z;
+		case WhatToChange::TEAPOT_KA_R: return teapotMaterial.Ka.x;
+		case WhatToChange::TEAPOT_KA_G: return teapotMaterial.Ka.y;
+		case WhatToChange::TEAPOT_KA_B: return teapotMaterial.Ka.z;
+		case WhatToChange::TEAPOT_KD_R: return teapotMaterial.Kd.x;
+		case WhatToChange::TEAPOT_KD_G: return teapotMaterial.Kd.y;
+		case WhatToChange::TEAPOT_KD_B: return teapotMaterial.Kd.z;
+		case WhatToChange::TEAPOT_KS_R: return teapotMaterial.Ks.x;
+		case WhatToChange::TEAPOT_KS_G: return teapotMaterial.Ks.y;
+		case WhatToChange::TEAPOT_KS_B: return teapotMaterial.Ks.z;
+		case WhatToChange::POWER_KS: return lightParameters.Lsp;
 		default: {
 			std::cout << "[Error] Invalid light type specified: " << type << std::endl;
 			return 0.0f;
