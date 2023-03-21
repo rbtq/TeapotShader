@@ -24,6 +24,7 @@ uniform struct LightDefinition {
     float Lsp;   // Specular light power
 };
 
+//declare these structures
 uniform LightDefinition lightDef;
 uniform MaterialDefinition materialDef;
 in LightData lightData;
@@ -49,12 +50,17 @@ vec3 calculateSpecular(vec3 L) {
    return clamp(materialDef.Ks * lightDef.Ls * pow(dot(normalize(CPos - lightData.vertPos), reflect(-L, lightData.N)),lightDef.Lsp),0.0,1.0);
 }
 
+//calculate the normalised light vector - the distance from the point to the source
+vec3 calculateLightVector() {
+    return normalize(lightData.lightPos - lightData.vertPos);  //Calculating the normal between the teapot surface and the light source
+}
+
 
 //this is the light shader for a single point and is repeated
 void main() {
 
    //Calculate the light vector
-   vec3 L = normalize(lightData.lightPos - lightData.vertPos);  //Calculating the normal between the teapot surface and the light source
+   vec3 L = calculateLightVector();
 
    //calculate the light intensity
    FragColour = vec4(calculateAmbient() + calculateDiffuse(L) + calculateSpecular(L), 1.0);
