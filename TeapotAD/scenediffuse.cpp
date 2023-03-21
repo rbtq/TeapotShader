@@ -23,17 +23,8 @@ namespace imat2908
 /////////////////////////////////////////////////////////////////////////////////////////////
 SceneDiffuse::SceneDiffuse()
 {
-	/*
-	//Set the plane's material properties in the shader and render
-	prog.setUniform("lightDef.Ks", 0.10f, 0.1f, 0.10f); // What elements does Kd have?
-	prog.setUniform("lightDef.Kd", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
-	prog.setUniform("lightDef.Ka", 0.51f, 1.0f, 0.49f); // What elements does Kd have?
-	//Set the Teapot material properties in the shader and render
-	prog.setUniform("lightDef.Ks", 0.29f, 0.29f, 0.29f); // What elements does Kd have?
-	prog.setUniform("lightDef.Kd", 0.46f, 0.29f, 0.00f); // What elements does Kd have?
-	prog.setUniform("lightDef.Ka", 0.46f, 0.29f, 0.00f); // What elements does Kd have?*/
 
-	//setup structures
+	//setup structures with default values
 	planeMaterial.Ks = vec3(0.10f, 0.1f, 0.10f);
 	planeMaterial.Kd = vec3(0.51f, 1.0f, 0.49f);
 	planeMaterial.Ka = vec3(0.51f, 1.0f, 0.49f);
@@ -95,7 +86,25 @@ void SceneDiffuse::setLightParams(QuatCamera camera)
 	prog.setUniform("lightDef.La", lightParameters.La, lightParameters.La, lightParameters.La); //set ambient intensity
 	prog.setUniform("lightDef.Lsp", lightParameters.Lsp); //set specular power
 	
-	prog.setUniform("LightPosition", worldLight );
+	prog.setUniform("inputData.LightPosition", worldLight );
+}
+
+//render the background
+void SceneDiffuse::renderBackground(QuatCamera camera) {
+	//Set the plane's material properties in the shader and render
+	prog.setUniform("materialDef.Ks", planeMaterial.Ks); // Set the materials specular reflectivity
+	prog.setUniform("materialDef.Kd", planeMaterial.Kd); // What elements does Kd have?
+	prog.setUniform("materialDef.Ka", planeMaterial.Ka); // What elements does Kd have?
+	plane->render();//then display the plane
+}
+
+//render the teapot
+void SceneDiffuse::renderTeapot(QuatCamera camera) {
+	//Set the Teapot material properties in the shader and render
+	prog.setUniform("materialDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
+	prog.setUniform("materialDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
+	prog.setUniform("materialDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
+	teapot->render();//then display the teapot
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,22 +122,14 @@ void SceneDiffuse::render(QuatCamera camera)
 	model = mat4(1.0f);
 	//Set the matrices for the plane although it is only the model matrix that changes so could be made more efficient
     setMatrices(camera);
-	//Set the plane's material properties in the shader and render
-	prog.setUniform("materialDef.Ks", planeMaterial.Ks); // What elements does Kd have?
-	prog.setUniform("materialDef.Kd", planeMaterial.Kd); // What elements does Kd have?
-	prog.setUniform("materialDef.Ka", planeMaterial.Ka); // What elements does Kd have?
-	plane->render();// what does it do?
-
-
+	//render the plane to the camera
+	renderBackground(camera);
 
 	//Now set up the teapot 
 	 model = mat4(1.0f);
 	 setMatrices(camera);
-	 //Set the Teapot material properties in the shader and render
-	 prog.setUniform("materialDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
-	 prog.setUniform("materialDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
-	 prog.setUniform("materialDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
-	 teapot->render(); // what does it do?
+	 //then display it
+	 renderTeapot(camera);
 	
 }
 
@@ -141,12 +142,12 @@ void SceneDiffuse::setMatrices(QuatCamera camera)
 
     mat4 mv = camera.view() * model;
     prog.setUniform("ModelViewMatrix", mv);
-    prog.setUniform("NormalMatrix", mat3( vec3(mv[0]), vec3(mv[1]), vec3(mv[2]) ));
+    prog.setUniform("inputData.NormalMatrix", mat3( vec3(mv[0]), vec3(mv[1]), vec3(mv[2]) ));
     prog.setUniform("MVP", camera.projection() * mv);
 	mat3 normMat = glm::transpose(glm::inverse(mat3(model)));// What does this line do?
-	prog.setUniform("M", model);
-	prog.setUniform("V", camera.view() );
-	prog.setUniform("P", camera.projection() );
+	prog.setUniform("inputData.M", model);
+	prog.setUniform("inputData.V", camera.view() );
+	prog.setUniform("inputData.P", camera.projection() );
 	prog.setUniform("CPos", camera.position());
 
 	

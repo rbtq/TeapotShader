@@ -41,7 +41,7 @@ ThingToChange thingToChange;
 //To keep track of cursor location
 double lastCursorPositionX, lastCursorPositionY, cursorPositionX, cursorPositionY;
 
-//printing the result of a change
+//printing the result of a change using the keypad
 void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAmount, float newValue) {
 	//is it increasing?
 	if (isIncreasing) {
@@ -84,7 +84,7 @@ void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAm
 
 }
 
-//printing what is currently selected to be changed
+//printing what is currently selected to be changed using the keypad
 void printWhatCouldBeChanged(WhatToChange change) {
 	std::cout << "Current value selected: ";
 	//what is selected
@@ -130,35 +130,37 @@ static void key_callback(GLFWwindow* window, int key, int cancode, int action, i
 			scene->animate(!(scene->animating()));
 	if (key == 'R' && action == GLFW_RELEASE)
 			camera.reset();
-	//change intensity
+	//increase value of selected component by a set amount
 	if (key == GLFW_KEY_KP_ADD) {
 		scene->changeLightIntensity(thingToChange.getWhatToChange(), 0.01f);
 		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
-	//change intensity as long as it isnt -
+	//decrease value of selected component by a set amount as long as it doesnt result in a negative value
 	else if (key == GLFW_KEY_KP_SUBTRACT && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
 		scene->changeLightIntensity(thingToChange.getWhatToChange(), -0.01f);
 		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
+	//multiply value of selected component by a set amount 
 	else if (key == GLFW_KEY_KP_MULTIPLY && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
 		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * 0.1f);
 		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
+	//divide value of selected component by a set amount 
 	else if (key == GLFW_KEY_KP_DIVIDE && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
 		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * -0.1f);
 		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
-	//change the type of light to be changed
+	//change the selected value to be changed
 	else if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
 		thingToChange++;
 		printWhatCouldBeChanged(thingToChange.getWhatToChange());
 	}
-	//change the type of light to be changed
+	//change the selected value to be changed
 	else if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
 		thingToChange--;
 		printWhatCouldBeChanged(thingToChange.getWhatToChange());
 	}
-	//print the data
+	//print the current values being used
 	else if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) {
 		system("CLS");
 		scene->printSceneValues();

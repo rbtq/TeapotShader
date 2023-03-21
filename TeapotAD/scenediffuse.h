@@ -93,6 +93,9 @@ private:
 
     void compileAndLinkShader(); //Compile and link the shader
 
+    void renderTeapot(QuatCamera camera); //renders the teapot
+    void renderBackground(QuatCamera camera); //renders the background
+
 public:
     SceneDiffuse(); //Constructor
 
