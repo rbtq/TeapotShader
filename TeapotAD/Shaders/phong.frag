@@ -2,9 +2,9 @@
 
 //structure that contains info on a point on the surface
 in struct LightData {
-    vec3 vertPos;
-    vec3 N; //vertex normal
-    vec3 lightPos;
+    vec3 vertPos;       //vertex position
+    vec3 N;             //vertex normal
+    vec3 lightPos;      //light position
     /*TODO:: Complete your shader code for a full Phong shading*/ 
 };
 uniform vec3 CPos; //camera position
@@ -63,7 +63,7 @@ void main() {
    vec3 L = calculateLightVector();
 
    //calculate the light intensity
-   FragColour = vec4(calculateAmbient() + calculateDiffuse(L) + calculateSpecular(L), 1.0);
+   FragColour = vec4(/*calculateAmbient() + */calculateDiffuse(L)/* + calculateSpecular(L)*/, 1.0);
 
 }
 
