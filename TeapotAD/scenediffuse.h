@@ -35,7 +35,7 @@ private:
 public:
     //operator functions to change what to change
     void operator++(int) {
-        if (toChange != WhatToChange::POWER_KS) {
+        if (toChangeInt != 21) {
             toChangeInt++;
             toChange = (WhatToChange)toChangeInt;
         }

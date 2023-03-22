@@ -1,13 +1,13 @@
 #version 430
 
-//structure that defines a point on the surface
+//structure that contains info on a point on the surface
 in struct LightData {
     vec3 vertPos;
-    vec3 N; //normal
+    vec3 N; //vertex normal
     vec3 lightPos;
     /*TODO:: Complete your shader code for a full Phong shading*/ 
 };
-uniform vec3 CPos;
+uniform vec3 CPos; //camera position
 
 //structure that defines a material
 uniform struct MaterialDefinition {
