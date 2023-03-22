@@ -24,14 +24,17 @@ namespace imat2908
 SceneDiffuse::SceneDiffuse()
 {
 
-	//setup structures with default values
+	//setup structures with default reflectiveness values
+	//						  R      G      B
 	planeMaterial.Ks = vec3(0.10f, 0.1f, 0.10f);
 	planeMaterial.Kd = vec3(0.51f, 1.0f, 0.49f);
 	planeMaterial.Ka = vec3(0.51f, 1.0f, 0.49f);
-
+	planeMaterial.Lsp = 1.0f; //shinyness factor
+	//                        R       G      B
 	teapotMaterial.Ks = vec3(0.29f, 0.29f, 0.29f);
 	teapotMaterial.Kd = vec3(0.46f, 0.29f, 0.00f);
 	teapotMaterial.Ka = vec3(0.46f, 0.29f, 0.00f);
+	teapotMaterial.Lsp = 1.0f; //shinyness factor
 	
 }
 
@@ -84,27 +87,18 @@ void SceneDiffuse::setLightParams(QuatCamera camera)
 	prog.setUniform("lightDef.Ls", lightParameters.Ls, lightParameters.Ls, lightParameters.Ls); //set specular intensity
 	prog.setUniform("lightDef.Ld", lightParameters.Ld, lightParameters.Ld, lightParameters.Ld); //set defuse intensity
 	prog.setUniform("lightDef.La", lightParameters.La, lightParameters.La, lightParameters.La); //set ambient intensity
-	prog.setUniform("lightDef.Lsp", lightParameters.Lsp); //set specular power
 	
 	prog.setUniform("inputData.LightPosition", worldLight );
 }
 
-//render the background
-void SceneDiffuse::renderBackground(QuatCamera camera) {
-	//Set the plane's material properties in the shader and render
-	prog.setUniform("materialDef.Ks", planeMaterial.Ks); // Set the materials specular reflectivity
-	prog.setUniform("materialDef.Kd", planeMaterial.Kd); // What elements does Kd have?
-	prog.setUniform("materialDef.Ka", planeMaterial.Ka); // What elements does Kd have?
-	plane->render();//then display the plane
-}
-
-//render the teapot
-void SceneDiffuse::renderTeapot(QuatCamera camera) {
-	//Set the Teapot material properties in the shader and render
-	prog.setUniform("materialDef.Ks", teapotMaterial.Ks); // What elements does Kd have?
-	prog.setUniform("materialDef.Kd", teapotMaterial.Kd); // What elements does Kd have?
-	prog.setUniform("materialDef.Ka", teapotMaterial.Ka); // What elements does Kd have?
-	teapot->render();//then display the teapot
+//render an object to the screen
+void SceneDiffuse::renderObject(QuatCamera camera, Drawable* object, MaterialParams materialDef) {
+	//Set the object's material properties in the shader and render
+	prog.setUniform("materialDef.Ks", materialDef.Ks); // Set the materials specular reflectivity
+	prog.setUniform("materialDef.Kd", materialDef.Kd); // Set the materials diffuse reflectivity
+	prog.setUniform("materialDef.Ka", materialDef.Ka); // Set the materials ambient reflectivity
+	prog.setUniform("materialDef.Lsp", materialDef.Lsp); //set shinyness
+	object->render();//then display the object
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,19 +111,19 @@ void SceneDiffuse::render(QuatCamera camera)
 	setLightParams(camera); //update the light parameters
 
 	//First deal with the plane to represent the ground
-
+	
 	//Initialise the model matrix for the plane
 	model = mat4(1.0f);
 	//Set the matrices for the plane although it is only the model matrix that changes so could be made more efficient
     setMatrices(camera);
 	//render the plane to the camera
-	renderBackground(camera);
+	renderObject(camera,plane,planeMaterial);
 
 	//Now set up the teapot 
 	 model = mat4(1.0f);
 	 setMatrices(camera);
 	 //then display it
-	 renderTeapot(camera);
+	 renderObject(camera, teapot, teapotMaterial);
 	
 }
 
@@ -148,7 +142,7 @@ void SceneDiffuse::setMatrices(QuatCamera camera)
 	prog.setUniform("inputData.M", model);
 	prog.setUniform("inputData.V", camera.view() );
 	prog.setUniform("inputData.P", camera.projection() );
-	prog.setUniform("CPos", camera.position());
+	prog.setUniform("cameraDef.CPos", camera.position());
 
 	
 }
@@ -183,8 +177,8 @@ void SceneDiffuse::compileAndLinkShader()
     }
 }
 
-//changing the intensity of light
-void SceneDiffuse::changeLightIntensity(WhatToChange type, float value) {
+//change the selected value
+void SceneDiffuse::changeValue(WhatToChange type, float value) {
 	switch (type) {
 		case WhatToChange::AMBIENT_INTENSITY: { //ambient
 			lightParameters.La += value;
@@ -270,13 +264,17 @@ void SceneDiffuse::changeLightIntensity(WhatToChange type, float value) {
 			teapotMaterial.Ks.z += value;
 			break;
 		}
-		case WhatToChange::POWER_KS: { //power for specular
-			lightParameters.Lsp += value;
+		case WhatToChange::POWER_KS_TEAPOT: { //power for specular for the teapot
+			teapotMaterial.Lsp += value;
+			break;
+		}
+		case WhatToChange::POWER_KS_BACKGROUND: { //power for specular for the background
+			planeMaterial.Lsp += value;
 			break;
 		}
 	}
 }
-//get the light intensity for a type of light
+//get the value specified
 float SceneDiffuse::getValue(WhatToChange type) {
 	switch(type) {
 		case WhatToChange::AMBIENT_INTENSITY: return lightParameters.La;
@@ -300,7 +298,8 @@ float SceneDiffuse::getValue(WhatToChange type) {
 		case WhatToChange::TEAPOT_KS_R: return teapotMaterial.Ks.x;
 		case WhatToChange::TEAPOT_KS_G: return teapotMaterial.Ks.y;
 		case WhatToChange::TEAPOT_KS_B: return teapotMaterial.Ks.z;
-		case WhatToChange::POWER_KS: return lightParameters.Lsp;
+		case WhatToChange::POWER_KS_TEAPOT: return teapotMaterial.Lsp;
+		case WhatToChange::POWER_KS_BACKGROUND: return planeMaterial.Lsp;
 		default: {
 			std::cout << "[Error] Invalid light type specified: " << type << std::endl;
 			return 0.0f;
@@ -314,13 +313,14 @@ void SceneDiffuse::printSceneValues() {
 	std::cout << "Current Ambient light intensity: " << lightParameters.La << std::endl;
 	std::cout << "Current Diffuse light intensity: " << lightParameters.Ld << std::endl;
 	std::cout << "Current Specular light intensity: " << lightParameters.Ls << std::endl;
-	std::cout << "Current Specular light power: " << lightParameters.Lsp << std::endl;
 	std::cout << "Current Teapot Material ambient: " << teapotMaterial.Ka.x << " " << teapotMaterial.Ka.y << " " << teapotMaterial.Ka.z << std::endl;
 	std::cout << "Current Teapot Material diffuse: " << teapotMaterial.Kd.x << " " << teapotMaterial.Kd.y << " " << teapotMaterial.Kd.z << std::endl;
 	std::cout << "Current Teapot Material specular: " << teapotMaterial.Ks.x << " " << teapotMaterial.Ks.y << " " << teapotMaterial.Ks.z << std::endl;
+	std::cout << "Current Teapot shinyness value: " << teapotMaterial.Lsp << std::endl;
 	std::cout << "Current Plane Material ambient: " << planeMaterial.Ka.x << " " << planeMaterial.Ka.y << " " << planeMaterial.Ka.z << std::endl;
 	std::cout << "Current Plane Material diffuse: " << planeMaterial.Kd.x << " " << planeMaterial.Kd.y << " " << planeMaterial.Kd.z << std::endl;
 	std::cout << "Current Plane Material specular: " << planeMaterial.Ks.x << " " << planeMaterial.Ks.y << " " << planeMaterial.Ks.z << std::endl;
+	std::cout << "Current Plane shinyness value: " << planeMaterial.Lsp << std::endl;
 }
 
 }

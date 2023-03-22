@@ -57,7 +57,8 @@ void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAm
 		case WhatToChange::AMBIENT_INTENSITY: std::cout << "ambient light intensity "; break;
 		case WhatToChange::DIFFUSE_INTENSITY: std::cout << "diffuse light intensity "; break;
 		case WhatToChange::SPECULAR_INTENSITY: std::cout << "specular light intensity "; break;
-		case WhatToChange::POWER_KS: std::cout << "specular light power "; break;
+		case WhatToChange::POWER_KS_TEAPOT: std::cout << "teapot shinyness value "; break;
+		case WhatToChange::POWER_KS_BACKGROUND: std::cout << "plane shinyness value "; break;
 		case WhatToChange::BACKGROUND_KA_R: std::cout << "background ambient red value "; break;
 		case WhatToChange::BACKGROUND_KA_G: std::cout << "background ambient green value "; break;
 		case WhatToChange::BACKGROUND_KA_B: std::cout << "background ambient blue value "; break;
@@ -93,7 +94,8 @@ void printWhatCouldBeChanged(WhatToChange change) {
 		case WhatToChange::AMBIENT_INTENSITY: std::cout << "ambient light intensity "; break;
 		case WhatToChange::DIFFUSE_INTENSITY: std::cout << "diffuse light intensity "; break;
 		case WhatToChange::SPECULAR_INTENSITY: std::cout << "specular light intensity "; break;
-		case WhatToChange::POWER_KS: std::cout << "specular light power "; break;
+		case WhatToChange::POWER_KS_TEAPOT: std::cout << "teapot shinyness value "; break;
+		case WhatToChange::POWER_KS_BACKGROUND: std::cout << "plane shinyness value "; break;
 		case WhatToChange::BACKGROUND_KA_R: std::cout << "background ambient red value "; break;
 		case WhatToChange::BACKGROUND_KA_G: std::cout << "background ambient green value "; break;
 		case WhatToChange::BACKGROUND_KA_B: std::cout << "background ambient blue value "; break;
@@ -132,22 +134,22 @@ static void key_callback(GLFWwindow* window, int key, int cancode, int action, i
 			camera.reset();
 	//increase value of selected component by a set amount
 	if (key == GLFW_KEY_KP_ADD) {
-		scene->changeLightIntensity(thingToChange.getWhatToChange(), 0.01f);
+		scene->changeValue(thingToChange.getWhatToChange(), 0.01f);
 		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//decrease value of selected component by a set amount as long as it doesnt result in a negative value
 	else if (key == GLFW_KEY_KP_SUBTRACT && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
-		scene->changeLightIntensity(thingToChange.getWhatToChange(), -0.01f);
+		scene->changeValue(thingToChange.getWhatToChange(), -0.01f);
 		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//multiply value of selected component by a set amount 
 	else if (key == GLFW_KEY_KP_MULTIPLY && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
-		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * 0.1f);
+		scene->changeValue(thingToChange.getWhatToChange(), initialValue * 0.1f);
 		printResultOfChange(true, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//divide value of selected component by a set amount 
 	else if (key == GLFW_KEY_KP_DIVIDE && scene->getValue(thingToChange.getWhatToChange()) >= 0.0f) {
-		scene->changeLightIntensity(thingToChange.getWhatToChange(), initialValue * -0.1f);
+		scene->changeValue(thingToChange.getWhatToChange(), initialValue * -0.1f);
 		printResultOfChange(false, thingToChange.getWhatToChange(), scene->getValue(thingToChange.getWhatToChange()) - initialValue, scene->getValue(thingToChange.getWhatToChange()));
 	}
 	//change the selected value to be changed
