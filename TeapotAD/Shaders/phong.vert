@@ -4,7 +4,7 @@ layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec3 VertexNormal;
 
 //structure that contains all the data being outputted
-out struct OutputData {
+out struct LightData {
     vec3 vertPos; //Vertex position in eye coords
     vec3 N; //Transformed normal
     vec3 lightPos; //Light position in eye coords
@@ -26,7 +26,7 @@ struct ProcessData {
 };
 
 //declare structures
-out OutputData outputData;
+out LightData lightData;
 ProcessData processData;
 uniform InputData inputData;
 
@@ -65,11 +65,11 @@ void main()
    processData.MV = calculateMV();
    processData.vertexPositionHomogenous = convertToHomogenous(VertexPosition);
 
-   outputData.vertPos = calculateVertexPosition(); 
+   lightData.vertPos = calculateVertexPosition(); 
      
-   outputData.lightPos = calculateLightPosition();  
+   lightData.lightPos = calculateLightPosition();  
 
-   outputData.N = calculateVertexNormal();
+   lightData.N = calculateVertexNormal();
       
    setModelPositionOnScreen();
 }
