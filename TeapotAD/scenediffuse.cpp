@@ -35,6 +35,8 @@ SceneDiffuse::SceneDiffuse()
 	teapotMaterial.Kd = vec3(0.46f, 0.29f, 0.00f);
 	teapotMaterial.Ka = vec3(0.46f, 0.29f, 0.00f);
 	teapotMaterial.Lsp = 1.0f; //shinyness factor
+
+	isUsingPhong = true;
 	
 }
 
@@ -64,6 +66,9 @@ void SceneDiffuse::initScene(QuatCamera camera)
 	//Create the teapot with translated lid
 	teapot = new VBOTeapot(16,lid);
 
+	//set shader variables
+	prog.setUniform("toonShaderShades", lightParameters.numberOfShades);
+	prog.setUniform("isPhong", isUsingPhong);
 
 }
 
@@ -80,15 +85,13 @@ void SceneDiffuse::update( float t )
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SceneDiffuse::setLightParams(QuatCamera camera)
 {
-
-	vec3 worldLight = vec3(10.0f,10.0f,10.0f);
    
 	
 	prog.setUniform("lightDef.Ls", lightParameters.Ls, lightParameters.Ls, lightParameters.Ls); //set specular intensity
 	prog.setUniform("lightDef.Ld", lightParameters.Ld, lightParameters.Ld, lightParameters.Ld); //set defuse intensity
 	prog.setUniform("lightDef.La", lightParameters.La, lightParameters.La, lightParameters.La); //set ambient intensity
 	
-	prog.setUniform("inputData.LightPosition", worldLight );
+	prog.setUniform("inputData.LightPosition", lightParameters.distance );
 }
 
 //render an object to the screen
@@ -143,7 +146,6 @@ void SceneDiffuse::setMatrices(QuatCamera camera)
 	prog.setUniform("inputData.V", camera.view() );
 	prog.setUniform("inputData.P", camera.projection() );
 	prog.setUniform("cameraDef.CPos", camera.position());
-
 	
 }
 
@@ -166,8 +168,8 @@ void SceneDiffuse::compileAndLinkShader()
 {
    
 	try {
-    	prog.compileShader("Shaders/phong.vert");
-    	prog.compileShader("Shaders/phong.frag");
+		prog.compileShader("Shaders/shaders.vert");
+		prog.compileShader("Shaders/shaders.frag");
     	prog.link();
     	prog.validate();
     	prog.use();
@@ -217,11 +219,11 @@ void SceneDiffuse::changeValue(WhatToChange type, float value) {
 			break;
 		}
 		case WhatToChange::BACKGROUND_KS_R: { //background color red specular
-			planeMaterial.Ks.z += value;
+			planeMaterial.Ks.x += value;
 			break;
 		}
 		case WhatToChange::BACKGROUND_KS_G: { //background color green specular
-			planeMaterial.Ks.z += value;
+			planeMaterial.Ks.y += value;
 			break;
 		}
 		case WhatToChange::BACKGROUND_KS_B: { //background color blue specular
@@ -253,11 +255,11 @@ void SceneDiffuse::changeValue(WhatToChange type, float value) {
 			break;
 		}
 		case WhatToChange::TEAPOT_KS_R: { //teapot color red specular
-			teapotMaterial.Ks.z += value;
+			teapotMaterial.Ks.x += value;
 			break;
 		}
 		case WhatToChange::TEAPOT_KS_G: { //teapot color green specular
-			teapotMaterial.Ks.z += value;
+			teapotMaterial.Ks.y += value;
 			break;
 		}
 		case WhatToChange::TEAPOT_KS_B: { //teapot color blue specular
@@ -271,6 +273,21 @@ void SceneDiffuse::changeValue(WhatToChange type, float value) {
 		case WhatToChange::POWER_KS_BACKGROUND: { //power for specular for the background
 			planeMaterial.Lsp += value;
 			break;
+		}
+		case WhatToChange::TOON_SHADE_COUNT: { //number of toon shades
+			if (value > 0) {
+				lightParameters.numberOfShades++;
+			}
+			else {
+				lightParameters.numberOfShades--;
+			}
+			prog.setUniform("toonShaderShades", lightParameters.numberOfShades);
+			break;
+		}
+		case WhatToChange::LIGHT_POSITION: { //light position
+			lightParameters.distance.x += value;
+			lightParameters.distance.y += value;
+			lightParameters.distance.z += value;
 		}
 	}
 }
@@ -300,6 +317,8 @@ float SceneDiffuse::getValue(WhatToChange type) {
 		case WhatToChange::TEAPOT_KS_B: return teapotMaterial.Ks.z;
 		case WhatToChange::POWER_KS_TEAPOT: return teapotMaterial.Lsp;
 		case WhatToChange::POWER_KS_BACKGROUND: return planeMaterial.Lsp;
+		case WhatToChange::TOON_SHADE_COUNT: return (float)lightParameters.numberOfShades;
+		case WhatToChange::LIGHT_POSITION: return lightParameters.distance.x;
 		default: {
 			std::cout << "[Error] Invalid light type specified: " << type << std::endl;
 			return 0.0f;
@@ -321,6 +340,16 @@ void SceneDiffuse::printSceneValues() {
 	std::cout << "Current Plane Material diffuse: " << planeMaterial.Kd.x << " " << planeMaterial.Kd.y << " " << planeMaterial.Kd.z << std::endl;
 	std::cout << "Current Plane Material specular: " << planeMaterial.Ks.x << " " << planeMaterial.Ks.y << " " << planeMaterial.Ks.z << std::endl;
 	std::cout << "Current Plane shinyness value: " << planeMaterial.Lsp << std::endl;
+	std::cout << "Current shader type: ";
+	if (isUsingPhong) {
+		std::cout << "Phong";
+	}
+	else {
+		std::cout << "Toon";
+	}
+	std::cout << std::endl;
+	std::cout << "Current toon shade count: " << lightParameters.numberOfShades << std::endl;
+	std::cout << "Current light source position: " << lightParameters.distance.x << " " << lightParameters.distance.y << " " << lightParameters.distance.z << std::endl;
 }
 
 }

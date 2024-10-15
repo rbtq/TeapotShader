@@ -185,8 +185,8 @@
     <ClCompile Include="vboteapot.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\phong.frag" />
-    <None Include="Shaders\phong.vert" />
+    <None Include="Shaders\shaders.frag" />
+    <None Include="Shaders\shaders.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

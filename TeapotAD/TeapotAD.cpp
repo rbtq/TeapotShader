@@ -50,7 +50,6 @@ void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAm
 	else {
 		std::cout << "Decreasing ";
 	}
-
 	//what is the change?
 	switch (changed)
 	{
@@ -77,6 +76,7 @@ void printResultOfChange(bool isIncreasing, WhatToChange changed, float changeAm
 		case WhatToChange::TEAPOT_KS_R: std::cout << "teapot specular red value "; break;
 		case WhatToChange::TEAPOT_KS_G: std::cout << "teapot specular green value "; break;
 		case WhatToChange::TEAPOT_KS_B: std::cout << "teapot specular blue value "; break;
+		case WhatToChange::LIGHT_POSITION: std::cout << "light position to origin "; break;
 		default: std::cout << "null "; break;
 	}
 
@@ -114,6 +114,8 @@ void printWhatCouldBeChanged(WhatToChange change) {
 		case WhatToChange::TEAPOT_KS_R: std::cout << "teapot specular red value "; break;
 		case WhatToChange::TEAPOT_KS_G: std::cout << "teapot specular green value "; break;
 		case WhatToChange::TEAPOT_KS_B: std::cout << "teapot specular blue value "; break;
+		case WhatToChange::TOON_SHADE_COUNT: std::cout << "toon shade count "; break;
+		case WhatToChange::LIGHT_POSITION: std::cout << "light position to origin "; break;
 		default: std::cout << "null "; break;
 	}
 	std::cout << std::endl;
@@ -166,6 +168,10 @@ static void key_callback(GLFWwindow* window, int key, int cancode, int action, i
 	else if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) {
 		system("CLS");
 		scene->printSceneValues();
+	}
+	//switch between the 2 shader types
+	else if (key == GLFW_KEY_KP_0 && action == GLFW_PRESS) {
+		scene->togglePhong();
 	}
 }
 

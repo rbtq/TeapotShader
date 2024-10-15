@@ -25,7 +25,7 @@ enum WhatToChange { AMBIENT_INTENSITY, DIFFUSE_INTENSITY, SPECULAR_INTENSITY,
     BACKGROUND_KA_R, BACKGROUND_KA_G, BACKGROUND_KA_B,
     BACKGROUND_KD_R, BACKGROUND_KD_G, BACKGROUND_KD_B,
     BACKGROUND_KS_R, BACKGROUND_KS_G, BACKGROUND_KS_B,
-    POWER_KS_TEAPOT, POWER_KS_BACKGROUND
+    POWER_KS_TEAPOT, POWER_KS_BACKGROUND, TOON_SHADE_COUNT, LIGHT_POSITION
 };
 //class for selecting what to change
 class ThingToChange {
@@ -37,7 +37,7 @@ private:
 public:
     //operator functions to change what to change
     void operator++(int) {
-        if (toChangeInt != 22) {
+        if (toChangeInt != 24) {
             toChangeInt++;
             toChange = (WhatToChange)toChangeInt;
         }
@@ -57,19 +57,21 @@ public:
 //structure for light parameters
 struct LightParams {
 public:
-    float Ls = 0.3f;
-    float Ld = 0.9f;
-    float La = 0.3f;
+    float Ls = 0.3f; //intensity for specular light
+    float Ld = 0.9f; //intensity for diffuse light
+    float La = 0.3f; //intenstity for ambient
+    int numberOfShades = 50; //number of shades for toon shading
+    vec3 distance = vec3(10.0f); //distance from 0,0,0 the source is
 
 };
 
 //structure for material parameters
 struct MaterialParams {
 public:
-    vec3 Ks = vec3(0);
-    vec3 Kd = vec3(0);
-    vec3 Ka = vec3(0);
-    float Lsp = 0.0f;
+    vec3 Ks = vec3(0); //specular reflectivity
+    vec3 Kd = vec3(0); //diffuser reflectivity
+    vec3 Ka = vec3(0); //ambient reflectivity
+    float Lsp = 0.0f; //specular shinyness factor
 };
 
 
@@ -85,6 +87,7 @@ private:
     LightParams lightParameters; //!<stores the parameters for the light
     MaterialParams planeMaterial; //!<stores parameters for the plane
     MaterialParams teapotMaterial; //!<stores parameters for the teapot
+    bool isUsingPhong; //!<stores if phong shading or toon shading should be used
 
     mat4 model; //Model matrix
 
@@ -113,6 +116,16 @@ public:
     void changeValue(WhatToChange type, float value); //!<change the light intensity of a type of light
     float getValue(WhatToChange type); //!<get the current light intensity for a type of light
     void printSceneValues(); //!<print all scene values
+    void togglePhong() { 
+        isUsingPhong = !isUsingPhong; 
+        prog.setUniform("isPhong", isUsingPhong);
+        if (isUsingPhong) {
+            std::cout << "Phong shader enabled!" << std::endl;
+        }
+        else {
+            std::cout << "Toon shader enabled!" << std::endl;
+        }
+    }; //switch between toon and phong shaders
 
     
 };

@@ -100,10 +100,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\phong.vert">
+    <None Include="Shaders\shaders.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Shaders\phong.frag">
+    <None Include="Shaders\shaders.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

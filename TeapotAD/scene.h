@@ -5,6 +5,7 @@
 
 #include <glfw3.h>
 #include "QuatCamera.h"
+#include <iostream>
 
 namespace imat2908
 {
